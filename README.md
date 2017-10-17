@@ -14,7 +14,7 @@ VideoSpider
 我所使用的是<strong>mysql</strong>数据库，利用<strong>SQLyog</strong>来管理我的数据库。<br>
 利用SQL语句：<br>
 
-```
+```python
 import MYSQLdb
 import sys
 conn = MYSQLdb.connect('localhost', 'root', 'root', 'video')        //连接video数据库
@@ -49,7 +49,7 @@ conn.close()
 表建好了，接下来就是将获取下来的存放到数据库中。<br>
 这个比较简单，编写
 
-```
+```python
 def rr_mysql(url, video_url, video_message, video_url_file):
 ```
 
@@ -58,7 +58,7 @@ def rr_mysql(url, video_url, video_message, video_url_file):
 接着用<b>execute</b>实现SQL语句。最后可别忘了关闭事务和连接。<br>
 有些初学者可能对于传这么多的参数不知道如何下手，这里有一些方法：<br>
 
-```
+```python
 //第一种方法
 sql_1 = "INSERT INTO rr(Video_Id, Video_Name, Video_Url, Video_Author, Video_Time, Video_Size, " \
                   "Video_ViewCount, Video_CommentCount, Video_FavCount, Video_Web, File_Url) " \
