@@ -10,7 +10,7 @@ VideoSpider
 
 <h3>数据库</h3>
 
-首先先来了解一下基本的<strong>数据库操作</strong><br>
+首先先来了解一下这个项目的<strong>数据库操作</strong><br>
 我所使用的是<strong>mysql</strong>数据库，利用<strong>SQLyog</strong>来管理我的数据库。<br>
 利用SQL语句：<br>
 
@@ -54,7 +54,7 @@ def rr_mysql(url, video_url, video_message, video_url_file):
 ```
 
 方法，传入web_url、视频真实地址、视频的一些信息、视频的本地存放地址等参数。<br>
-在方法中先<b>connection</b>连接数据库，接着建立<b>cursor</>事务，再编写<b>SQL</b>语句，<br>
+在方法中先<b>connection</b>连接数据库，接着建立<b>cursor</b>事务，再编写<b>SQL</b>语句，<br>
 接着用<b>execute</b>实现SQL语句。最后可别忘了关闭事务和连接。<br>
 有些初学者可能对于传这么多的参数不知道如何下手，这里有一些方法：<br>
 
@@ -80,6 +80,18 @@ sql_1 = "INSERT INTO rr(Video_Id, Video_Name, Video_Url, Video_Author, Video_Tim
                   video_message[2],video_message[6], video_message[3], video_message[4], 
                   video_message[5], url,video_url_file)"
 ```
+
+然后就是关于实时的将视频的动态变化信息存储到数据库中，对于数据库的操作大致没有变化，思路就是通过<br>
+<b>SELECT...WHERE...</b>语句查找数据库中关于相同<b>web_url</b>的那一条信息，然后和网上获取下来<br>
+的数据进行对比，将变化的值通过<b>UPDATE...SET...WHERE...</b>语句进行实时的更新。<br>
+由于种种可能，例如不小心将文件夹里的视频删除掉了或者数据库的某条信息丢失，我们就要在数据更新的的时候<br>
+快速发现这个问题，并且解决掉：将缺失的数据、丢失的视频文件补回来。所以解决这个问题的项操作和上面的更新<br>
+数据方法雷同。数据库中的信息缺失很好解决，就是将没有的数据重新再写回数据库，那么此处有什么难点呢？<br>
+（确实有，困扰了我几个小时，最后还是将其解决掉了）\(^.^)/<br>
+问题就在于如何判断存放这个视频的文件夹中是否缺失了某个视频：彻底丢失或者视频大小不完整。因为程序是在不断<br>
+地运行中，文件夹中的视频量也是在变化。
+
+
 
 <h3>人人视频</h3>
 首先打开人人视频的网站 http://www.rr.tv/#/<br>
