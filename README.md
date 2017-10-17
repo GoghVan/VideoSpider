@@ -10,22 +10,35 @@ VideoSpider
 首先先来了解一下基本的<strong>数据库操作</strong><br>
 我所使用的是<strong>mysql</strong>数据库，利用<strong>SQLyog</strong>来管理我的数据库。<br>
 利用SQL语句：<br>
-```SQL
-CREAT TABLE rr(
-  Video_Id varchar(10) NOT NULL,      //
-  Video_Name varchar(50),             //
-  Video_Url varchar(100),             //
-  Video_Author varchar(20),           //
-  Video_Time varchar(10),             //
-  Video_Size varchar(20),             //
-  Video_ViewCount varchar(20),        //
-  Video_CommentCount varchar(20),     //
-  Video_FavCount varchar(20),         //
-  Video_Web varchar(50),              //
-  File_Url varchar(100),              //
-  PRIMARY KEY (Video_Id)              //
-);
+```python
+import MYSQLdb
+import sys
+conn = MYSQLdb.connect('localhost', 'root', 'root', 'test')        //连接test数据库
+try:
+  cur = conn.cursor()
+  cur.execute("DROP TABLE IF EXISTS rr")
+  sql = "CREAT TABLE rr(
+    Video_Id varchar(10) NOT NULL,      //Id
+    Video_Name varchar(50),             //名称
+    Video_Url varchar(100),             //真实url
+    Video_Author varchar(20),           //作者
+    Video_Time varchar(10),             //时长
+    Video_Size varchar(20),             //大小
+    Video_ViewCount varchar(20),        //观看数
+    Video_CommentCount varchar(20),     //评论数
+    Video_FavCount varchar(20),         //点赞数
+    Video_Web varchar(50),              //web_url
+    File_Url varchar(100),              //本地存放地址
+    PRIMARY KEY (Video_Id)              //设置主键
+  )"
+  cur.execute(sql)
+  cur.close()
+  conn.commit()
+except:
+  conn.rollback()
+conn.close()
 ```
+创建出我们所需要的表
 
 <h3>人人视频</h3>
 首先打开人人视频的网站 http://www.rr.tv/#/<br>
