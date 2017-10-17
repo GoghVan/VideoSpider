@@ -50,7 +50,7 @@ conn.close()
 这个比较简单，编写
 
 ```python
-def rr_mysql(url, video_url, video_message, video_url_file):
+  def rr_mysql(url, video_url, video_message, video_url_file):
 ```
 
 方法，传入web_url、视频真实地址、视频的一些信息、视频的本地存放地址等参数。<br>
@@ -60,37 +60,55 @@ def rr_mysql(url, video_url, video_message, video_url_file):
 
 ```python
 //第一种方法
-sql_1 = "INSERT INTO rr(Video_Id, Video_Name, Video_Url, Video_Author, Video_Time, Video_Size, " \
-                  "Video_ViewCount, Video_CommentCount, Video_FavCount, Video_Web, File_Url) " \
-                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"             
- cur.execute(sql, (video_message[7], video_message[0], video_url, video_message[1], video_message[2],
-                   video_message[6], video_message[3], video_message[4], video_message[5], url,
-                   video_url_file))
+  sql_1 = "INSERT INTO rr(x1, x2, x3, x4) " \
+          "VALUES (%s, %s, %s, %s)"             
+   cur.execute(sql, (n1, n2, n3, n4))
 //第二种方法
-sql_1 = "INSERT INTO rr(Video_Id, Video_Name, Video_Url, Video_Author, Video_Time, Video_Size, " \
-                  "Video_ViewCount, Video_CommentCount, Video_FavCount, Video_Web, File_Url) " \
-                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (video_message[7], video_message[0],
-                  video_url, video_message[1], video_message[2],video_message[6], video_message[3], 
-                  video_message[4], video_message[5], url,video_url_file)             
- cur.execute(sql)
+  sql_1 = "INSERT INTO rr(x1, x2, x3, x4) " \
+          "VALUES (%s, %s, %s, %s)" % (n1, n2, n3, n4)            
+   cur.execute(sql)
  //错误方法
- sql_1 = "INSERT INTO rr(Video_Id, Video_Name, Video_Url, Video_Author, Video_Time, Video_Size, " \
-                  "Video_ViewCount, Video_CommentCount, Video_FavCount, Video_Web, File_Url) " \
-                  "VALUES (video_message[7], video_message[0],video_url, video_message[1], 
-                  video_message[2],video_message[6], video_message[3], video_message[4], 
-                  video_message[5], url,video_url_file)"
+   sql_1 = "INSERT INTO rr(x1, x2, x3, x4) " \
+           "VALUES (n1, n2, n3, n4)"
 ```
 
-然后就是关于实时的将视频的动态变化信息存储到数据库中，对于数据库的操作大致没有变化，思路就是通过<br>
+&nbsp,&nbsp然后就是关于实时的将视频的动态变化信息存储到数据库中，对于数据库的操作大致没有变化，思路就是通过<br>
 <b>SELECT...WHERE...</b>语句查找数据库中关于相同<b>web_url</b>的那一条信息，然后和网上获取下来<br>
 的数据进行对比，将变化的值通过<b>UPDATE...SET...WHERE...</b>语句进行实时的更新。<br>
-由于种种可能，例如不小心将文件夹里的视频删除掉了或者数据库的某条信息丢失，我们就要在数据更新的的时候<br>
+&nbsp,&nbsp由于种种可能，例如不小心将文件夹里的视频删除掉了或者数据库的某条信息丢失，我们就要在数据更新的的时候<br>
 快速发现这个问题，并且解决掉：将缺失的数据、丢失的视频文件补回来。所以解决这个问题的项操作和上面的更新<br>
 数据方法雷同。数据库中的信息缺失很好解决，就是将没有的数据重新再写回数据库，那么此处有什么难点呢？<br>
 （确实有，困扰了我几个小时，最后还是将其解决掉了）\(^.^)/<br>
 问题就在于如何判断存放这个视频的文件夹中是否缺失了某个视频：彻底丢失或者视频大小不完整。因为程序是在不断<br>
-地运行中，文件夹中的视频量也是在变化。
+地运行中，文件夹中的视频量也是在变化。<br>
+&nbsp,&nbsp我的第一个想法就是每次向文件夹中添加一个完整的视频就会使文件夹的size变大，我们在获取视频的时候已经将<br>
+视频的大小得到了，那么每次下载玩一个视频，将这个文件的大小加上视频的大小，那么可以每次计算文件夹的大小来判断是否缺失视频。<br>
+但是问题又来了，怎么实时的获取文件夹大小呢？我从网上查了查，找到了利用python获取文件夹的大小的方法：<br>
 
+```python
+from os.path import join, getsize
+
+    def file_size(file_url):
+        size = 0
+        for root, dirs, files in os.walk(file_url):
+            size = size + sum([getsize(join(root, name)) for name in files])
+        return size
+```
+但是问题又来了，经过我的测试，每次只有当视频已经完全下载后这个大小才会显示正常，并且还不知道如何实时的获取视频流的大小。<br>
+&nbsp,&nbsp第二个想法（已经成功）是在第一个想法的基础上更加细致了一些。每次通过某种方法获取到这个视频（已下载的）在文件夹中<br>
+的大小，与网站中的视频大小进行对比判断是否文件损坏。但是这个前提是必须要判断出来视频（已下载）是否存在于文件夹中。<br>
+所以具体思路为：判断视频是否在文件夹中并且视频的大小等于网站上视频的大小，是的话就不做任何事，否的话则重新下载。<br>
+经过我努力以及细心的在网上查找后发现，可以调用系统函数来实现上述的方法。<br>
+```python
+import os
+from contextlib import closing
+video_in_file = os.path.exists(video_in_file_url)         //判断视频是否在文件夹里，返回TRUE OR FALSE
+video_in_file_size = os.path.getsize(video_in_file_url)   //得到视频在文件夹中的真实大小
+```
+
+以上就是关于<b>MySQL</b>在这个项目中的一些应用与开发的过程中遇到的一些问题和解决方法。<br>
+如果对于<b>Python</b>操作<b>MySQL</b>数据库还有疑问的话，<br>
+可以查阅这个文档：http://www.runoob.com/python/python-mysql.html
 
 
 <h3>人人视频</h3>
