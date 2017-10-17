@@ -110,7 +110,7 @@ video_in_file_size = os.path.getsize(video_in_file_url)   //得到视频在文�
 可以查阅这个文档：http://www.runoob.com/python/python-mysql.html
 <h3>进度条显示ProgressBar</h3>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;因为下载视频的时候一直在等并且控制台也不会显示任何的东西，我们不能实时的看到下载的快慢与过程，这显得就有些让人着急，在结合项目本身，我们需要实时的获取视频流的大小来显示出来。所以我从网上查找了很多的信息，但效果都不是很好，不是我想要的结果，最后终于查到了一个文档：http://blog.csdn.net/supercooly/article/details/51046561<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;但是这个利用<b>Python3.X</b>的<b>requests</b>模块，我这边用的是<b>Python2.7</b>。所以经过我的尝试与修改终于改为<b>Python2.7</b>可用的版本：
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;但是这个是利用<b>Python3.X</b>的<b>requests</b>模块，我这边用的是<b>Python2.7</b>。所以经过我的尝试与修改终于改为<b>Python2.7</b>可用的版本：
 
 ```python
 import sys
