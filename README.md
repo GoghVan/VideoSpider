@@ -1,7 +1,7 @@
 VideoSpider
 ===========
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;此项目是利用python2.7编写爬虫将的视频网站的web_url进行一系列操作，解析其真实视频地址和其视频相关的一些信息，例如视频的名称、ID、观看数、点赞数、评论数等，最后将其视频下载到本地文件夹内，然后将其他的信息保存至mysql数据库中。（目前项目还在开发当中，尽情期待新的内容）<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;此项目是利用<strong>python2.7</strong>编写爬虫将的视频网站的web_url进行一系列操作，解析其真实视频地址和其视频相关的一些信息，例如视频的名称、ID、观看数、点赞数、评论数等，最后将其视频下载到本地文件夹内，然后将其他的信息保存至mysql数据库中。（目前项目还在开发当中，尽情期待新的内容）<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;那么如何由网站的视频地址找到其视频的真实地址呢？<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们一步一步来看O(^_^)O<br>
 
@@ -185,10 +185,31 @@ import sys
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;可是.....事实却是只有一些基础的<b>HTML + javascript</b>代码，对于我们这个项目没有多大的帮助。
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;所以我们就要用到抓包利器<b>开发者工具</b>，我用的是<b>Chrome</b>浏览器，快捷键是<b>F12</b>，其他的浏览器一般都可以在设置里面找得到（点击 https://jingyan.baidu.com/article/c843ea0bb9433577921e4a50.html 学习谷歌浏览器开发者工具的基本操作）。
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;获取视频真实地址的第一种方法。刷新后，点击<b>Network</b>，我们可以清楚的看到最上面的<b>时间线</b>中有一条很长的蓝色线段，我们将区间拖动到这条蓝色的线条范围内，下面左边就会被过滤出一个<b>URL</b>,点击这个<b>URL</b>我们可以看到右边的<b>Preview</b>和<b>Response</b>为空的，但是<b>Header</b>里面就有我们所需要的内容：Request URL:http://qcloud.rrmj.tv/2017/10/14/15b944f6c44541a1979769db41841e23.mp4.f30.mp4?sign=2719acf1b797caa7e631a6ff2d15de0e&t=59e7059d&r=1544495093411242940 ，我们发现里面有<b>.mp4</b>的字符串，我们复制这个<b>URL</b>到浏览器，奇迹出现啦！出现的视频正是我们在网站看到的视频，所以视频的真实地址已经被我们找到，它的获取方式是<b>GET</b>。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;获取视频真实地址的第一种方法。刷新后，点击<b>Network</b>，我们可以清楚的看到最上面的<b>时间线</b>中有一条很长的蓝色线段，我们将区间拖动到这条蓝色的线条范围内，下面左边就会被过滤出一个<b>URL</b>,点击这个<b>URL</b>我们可以看到右边的<b>Preview</b>和<b>Response</b>为空的，但是<b>Headers</b>里面就有我们所需要的内容：Request URL:http://qcloud.rrmj.tv/2017/10/14/15b944f6c44541a1979769db41841e23.mp4.f30.mp4?sign=2719acf1b797caa7e631a6ff2d15de0e&t=59e7059d&r=1544495093411242940 ，我们发现里面有<b>.mp4</b>的字符串，我们复制这个<b>URL</b>到浏览器，奇迹出现啦！出现的视频正是我们在网站看到的视频，所以视频的真实地址已经被我们找到，它的获取方式是<b>GET</b>。<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;获取视频真实地址的第二种方法。上面的方法确实可行，但是结合项目本身，我决定还是放弃第一个做法。还是利用<b>开发者工具</b>,刷新后左边出现了很多的数据，整体浏览一遍后我们可以发现在中间偏上的一块区域内出现了两次“<b>detail</b>、<b>list</b>、<b>profile</b>、<b>all</b>、<b>profile</b>”,我们挨个点击发现最前面的数据在<b>Preview</b>中没有显示任何的数据，而在后面都会有数据。我们点开<b>detail</b>，发现<b>Preview</b>中有<b>JSON</b>数据，逐级展开后，我们就会惊奇的发现
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;获取视频真实地址的第二种方法。上面的方法确实可行，但是结合项目本身，我决定还是放弃第一个做法。还是利用<b>开发者工具</b>,刷新后左边出现了很多的数据，整体浏览一遍后我们可以发现在中间偏上的一块区域内出现了两次“<b>getVideoPlayLinkByVideo</b>、<b>detail</b>、<b>list</b>、<b>profile</b>、<b>all</b>、<b>profile</b>”,我们挨个点击发现最前面的数据在<b>Preview</b>中没有显示任何的数据，而后面都会有数据。我们点开<b>etVideoPlayLinkByVideo</b>，发现<b>Preview</b>中有<b>JSON</b>数据，逐级展开后，我们就会惊奇的发现,里面有<b>playLink</b>:http://qcloud.rrmj.tv/2017/10/14/15b944f6c44541a1979769db41841e23.mp4.f30.mp4?sign=237a2538b6310983f1913ad8b687505f&t=59e7288b&r=6224854028442601914 ,我们发现里面有<b>.mp4</b>的字符串，我们复制这个<b>playLink</b>到浏览器，奇迹出现啦！出现的视频正是我们在网站看到的视频，所以视频的真实地址已经被我们找到，在<b>Headers</b>中我们可以看到它的获取方式是向<b>http://web.rr.tv/v3plus/video/getVideoPlayLinkByVideoId</b>发送<b>POST</b>请求。<br>
+所以代码可以这样写：
+```python
+import js
+import requests
 
+  headers = {'clientVersion': '0.1.0', 'clientType': 'web',}                                  # 添加客户端版本信息
+  video_id = re.search(r'[0-9]+', web_url).group()                                            # 获取视频的ID
+  api_url = 'http://api.rr.tv/v3plus/video/getVideoPlayLinkByVideoId'                         # 调用视频接口
+  req_js = requests.post(api_url, data={'videoId': video_id}, headers=headers).content        # 发送请求获取数据
+  req_py = json.loads(req_js)                                                                 # 将JSON数据转换为Python数据
+  video_url = req_py["data"]["playLink"]                                                      # 获取视频真实地址
+  print video_url
+```
+
+这样就可以将视频的真实地址以字符串的形式输出。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;接着再往下看，会看到有<b>detail</b>，点击<b>detail</b>，在右边的<b>Preview</b>中有<b>JSON</b>数据，逐级展开后，我们最后会在<b>videoDetailView</b>中发现有该视频的信息：<b>author</b>、<b>title</b>、<b>commentCount</b>、<b>favCount</b>、<b>viewCount</b>。在<b>Headers</b>中我们可以看到它的获取方式是向<b>http://web.rr.tv/v3plus/video/detail</b>发送<b>POST</b>请求。<br>
+参考上面的代码，变换一下<b>api_url</b>和其对应的<b>pyhon</b>获取<b>JSON</b>中重要信息的代码：
+```python
+  api_url = 'http://web.rr.tv/v3plus/video/detail'                         # 调用信息接口
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果对于<b>python</b>操作<b>JSON</b>不太清楚，可以参考文档：http://www.jb51.net/article/73450.htm <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过以上的步骤，我们就可以将与视频相关的所有信息获取到了，剩下的就是调用下载函数将视频下载下来，将数据存入数据库。<br>
 
 
 
