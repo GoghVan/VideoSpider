@@ -211,6 +211,8 @@ import requests
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果对于<b>python</b>操作<b>JSON</b>不太清楚，可以参考文档：http://www.jb51.net/article/73450.htm <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过以上的步骤，我们就可以将与视频相关的所有信息获取到了，剩下的就是调用下载函数将视频下载下来，将数据存入数据库。<br>
 
+以上纯属个人兴趣爱好，欢迎多多提意见，如有冒犯，尽请谅解，不喜勿喷！
+
 
 
 
