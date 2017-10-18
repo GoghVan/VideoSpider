@@ -105,7 +105,7 @@ video_in_file_size = os.path.getsize(video_in_file_url)   // 得到视频在文
   )                                         // 连接数据库
   try:
     cur = conn.cursor()                     // 创建事务
-    sql = "SELECT * " \                     // sql语句
+    sql = "SELECT * " \
            "FROM XX " \
     cur.execute(sql)                        // 执行sql
     result_1 = cur.fetchone()               //  
@@ -173,11 +173,31 @@ import sys
 
 ```
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;上述俩个例子都可以实现将<b>'I am a text!'</b>存放到已建好的文件<b>log.txt</b>中，但是第一个事例是先将文件打开<b>open</b>，再写入内容<b>write</b>，最后再关闭<b>close</b>。而第二个实例利用<b>with....as...</b>语句就可以直接实现打开文件和关闭文件的功能，这样大大减少了因代码繁多而忘记写<b>close</b>的问题。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;上述俩个例子都可以实现将<b>'I am a text!'</b>存放到已建好的文件<b>log.txt</b>中，但是第一个事例是先将文件打开<b>open</b>，再写入内容<b>write</b>，最后再关闭<b>close</b>。而第二个实例利用<b>with....as...</b>语句就可以直接实现打开文件和关闭文件的功能，这样大大减少了因代码繁多而忘记写<b>close</b>的问题。<br>
+<br>
+...接下来我们就切入正题/（￥_￥）\
 
 <h3>人人视频</h3>
-首先打开人人视频的网站 http://www.rr.tv/#/<br>
-虽然网站给人的印象比较简答，但其内容还算广泛，也没有多余的广告.......<br>
-接着随便打开一个视频,例如其web_url：http://rr.tv/#/video/394450<br>
-按照一般的操作，我们肯定先会<strong>右键查看网页源代码</strong><br>
-可是.....确实这样：<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;打开人人视频的网站 http://www.rr.tv/#/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;虽然网站给人的印象比较简答，但其内容还算广泛，也没有多余的广告.......<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;随便打开一个视频,例如其web_url：http://rr.tv/#/video/394450<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;按照一般的操作，我们肯定先会<strong>右键查看网页源代码</strong>：view-source:http://rr.tv/#/video/394450<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;可是.....事实却是只有一些基础的<b>HTML + javascript</b>代码，对于我们这个项目没有多大的帮助。
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;所以我们就要用到抓包利器<b>开发者工具</b>，我用的是<b>Chrome</b>浏览器，快捷键是<b>F12</b>，其他的浏览器一般都可以在设置里面找得到（点击 https://jingyan.baidu.com/article/c843ea0bb9433577921e4a50.html 学习谷歌浏览器开发者工具的基本操作）。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;获取视频真实地址的第一种方法。刷新后，点击<b>Network</b>，我们可以清楚的看到最上面的<b>时间线</b>中有一条很长的蓝色线段，我们将区间拖动到这条蓝色的线条范围内，下面左边就会被过滤出一个<b>URL</b>,点击这个<b>URL</b>我们可以看到右边的<b>Preview</b>和<b>Response</b>为空的，但是<b>Header</b>里面就有我们所需要的内容：<b>Request URL</b>:<b>http://qcloud.rrmj.tv/2017/10/14/15b944f6c44541a1979769db41841e23.mp4.f30.mp4?sign=2719acf1b797caa7e631a6ff2d15de0e&t=59e7059d&r=1544495093411242940</b>，我们发现里面有<b>.mp4</b>的字符串，我们复制这个<b>URL</b>到浏览器，奇迹出现啦！出现的视频正是我们在网站看到的视频，所以视频的真实地址已经被我们找到，它的获取方式是<b>GET</b>。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
