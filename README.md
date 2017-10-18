@@ -14,23 +14,23 @@ VideoSpider
 ```python
 import MYSQLdb
 import sys
-conn = MYSQLdb.connect('localhost', 'root', 'root', 'video')        //连接video数据库
+conn = MYSQLdb.connect('localhost', 'root', 'root', 'video')        // 连接video数据库
 try:
   cur = conn.cursor()
   cur.execute("DROP TABLE IF EXISTS rr")
   sql = "CREAT TABLE rr(
-    Video_Id varchar(10) NOT NULL,      //Id
-    Video_Name varchar(50),             //名称
-    Video_Url varchar(100),             //真实url
-    Video_Author varchar(20),           //作者
-    Video_Time varchar(10),             //时长
-    Video_Size varchar(20),             //大小
-    Video_ViewCount varchar(20),        //观看数
-    Video_CommentCount varchar(20),     //评论数
-    Video_FavCount varchar(20),         //点赞数
-    Video_Web varchar(50),              //web_url
-    File_Url varchar(100),              //本地存放地址
-    PRIMARY KEY (Video_Id)              //设置主键
+    Video_Id varchar(10) NOT NULL,      // Id
+    Video_Name varchar(50),             // 名称
+    Video_Url varchar(100),             // 真实url
+    Video_Author varchar(20),           // 作者
+    Video_Time varchar(10),             // 时长
+    Video_Size varchar(20),             // 大小
+    Video_ViewCount varchar(20),        // 观看数
+    Video_CommentCount varchar(20),     // 评论数
+    Video_FavCount varchar(20),         // 点赞数
+    Video_Web varchar(50),              // web_url
+    File_Url varchar(100),              // 本地存放地址
+    PRIMARY KEY (Video_Id)              // 设置主键
   )"
   cur.execute(sql)
   cur.close()
@@ -56,15 +56,15 @@ conn.close()
 有些初学者可能对于传这么多的参数不知道如何下手，这里有一些方法：<br>
 
 ```python
-//第一种方法
+// 第一种方法
   sql_1 = "INSERT INTO rr(x1, x2, x3, x4) " \
           "VALUES (%s, %s, %s, %s)"             
    cur.execute(sql, (n1, n2, n3, n4))
-//第二种方法
+// 第二种方法
   sql_1 = "INSERT INTO rr(x1, x2, x3, x4) " \
           "VALUES (%s, %s, %s, %s)" % (n1, n2, n3, n4)            
    cur.execute(sql)
- //错误方法
+ // 错误方法
    sql_1 = "INSERT INTO rr(x1, x2, x3, x4) " \
            "VALUES (n1, n2, n3, n4)"
 ```
@@ -98,8 +98,42 @@ from os.path import join, getsize
 ```python
 import os
 from contextlib import closing
-video_in_file = os.path.exists(video_in_file_url)         //判断视频是否在文件夹里，返回TRUE OR FALSE
-video_in_file_size = os.path.getsize(video_in_file_url)   //得到视频在文件夹中的真实大小
+video_in_file = os.path.exists(video_in_file_url)         // 判断视频是否在文件夹里，返回TRUE OR FALSE
+video_in_file_size = os.path.getsize(video_in_file_url)   // 得到视频在文件夹中的真实大小
+```
+此外，我们从数据库中获取数据后怎么显示出来呢？看一下这个例子：
+
+```python
+  conn = MySQLdb.connect(
+       host='localhost', 
+       port='3306', 
+       user='root,
+       passwd='root',
+       db='XX',
+       charset='utf8',
+  )                                         // 连接数据库
+  try:
+    cur = conn.cursor()                     // 创建事务
+    sql = "SELECT * " \                     // sql语句
+           "FROM XX " \
+    cur.execute(sql)                        // 执行sql
+    result_1 = cur.fetchone()               //  
+    result_2 = cur.fetchmany(n)             // }获取数据
+    result_3 = cur.fetchall()               //
+
+    print result_1                          // 打印result_1结果
+    
+    for raw_2 in result_2:
+      print raw_2                           // 打印result_2结果
+      
+    for raw_3 in result_3:
+      print raw_3                           // 打印result_3结果
+      
+    cur.close()
+    conn.commit()
+  except:
+    conn.rollback()
+  conn.close()
 ```
 
 以上就是关于<b>MySQL</b>在这个项目中的一些应用与开发的过程中遇到的一些问题和解决方法。<br>
@@ -126,7 +160,7 @@ import sys
 
 ```
 
-<h3>with....as...</h3>
+<h3>with....as...小语法</h3>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;再介绍一个很好用的语法：<b>with....as...</b>。它的作用是什么呢？来看一下这两个例子就明白了！
 
 ```python
