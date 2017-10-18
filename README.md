@@ -126,7 +126,22 @@ import sys
 
 ```
 
+<h3>with....as...</h3>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;再介绍一个很好用的语法：<b>with....as...</b>。它的作用是什么呢？来看一下这两个例子就明白了！
 
+```python
+//example one
+  file = open('log.txt', 'w')
+  file.write('I am a text!')
+  file.close()
+  
+//example two
+  with open('log.txt') as file:
+    file.write('I am a text!')
+
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;上述俩个例子都可以实现将<b>'I am a text!'</b>存放到已建好的文件<b>log.txt</b>中，但是第一个事例是先将文件打开<b>open</b>，再写入内容<b>write</b>，最后再关闭<b>close</b>。而第二个实例利用<b>with....as...</b>语句就可以直接实现打开文件和关闭文件的功能，这样大大减少了因代码繁多而忘记写<b>close</b>的问题。
 
 <h3>人人视频</h3>
 首先打开人人视频的网站 http://www.rr.tv/#/<br>
