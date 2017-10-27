@@ -211,6 +211,80 @@ import requests
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果对于<b>python</b>操作<b>JSON</b>不太清楚，可以参考文档：http://www.jb51.net/article/73450.htm <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过以上的步骤，我们就可以将与视频相关的所有信息获取到了，剩下的就是调用下载函数将视频下载下来，将数据存入数据库。<br>
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;因为项目的增加，之前写的代码的利用性降低了，所以对其中几个地方做了些改变，以至于更好的适应其他的项目。<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>DownloadVideo</strong>文件中牵扯到将不同网站的的视频下载到不同的文件夹中，所以传入<b>video_file</b>这个参数，只要调用下载函数时多传入一个字符串来表明是哪个文件夹，视频就会被下载到不同的文件中，不会被搞混。然后发现这次的视频是<b>.flv</b>文件格式，而不是上次的<b>.mp4</b>文件格式，所以就会出现文件已经下载下来但是播放不了的问题，在这里只需要判断一下视频原下载地址是什么格式的然后对其分配相应格式的后缀名就好了，如下：
+```python
+  if '.flv' in self.url:
+    file_f = '存放文件路径' + '视频名称' + '.flv'
+  elif '.mp4' in self.url:
+    file_f = '存放文件路径' + '视频名称' + '.mp4'
+  else:
+    file_f = '存放文件路径' + '视频名称' + '.mp4'
+```
+（其实下载一个很好的视频播放器，不管是.mp4还是.flv还是等等，都可以随便观看啦，大家可以从网上找找！！）<br>
+
+...接下来我们就切入这次的正题/（￥_￥）\
+
+<h3>网易视频</h3>
+<b>网易视频包含的种类繁多，所以我只挑了其中3部分来做，包括：http://v.163.com/paike 、 http://v.163.com/zixun 、http://v.163.com/jishi </b>，大家可以将以上三个分支下的视频下载下来。<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;打开其中一个视频：http://v.163.com/paike/VBFGBLNBF/VBHBGAC2L.html <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;其实很多网页视频的url都还是蛮规整的0（！_ ！）0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;先来介绍最最简单的一个获取视频原下载地址的方法：鼠标右键点击<b>检查网页源代码</b>，大致浏览一下网页的<b>html</b>发现其实代码挺乱的，大量的<b><script></script></b>标签嵌套在<b>html</b>中，但这对于我们我们有好处，仔细的再浏览一遍发现有很多有用的<b>JSON</b>文件，类似于：
+```python
+  var _param = {
+    pltype : 6,
+    videoadv : 'http://v.163.com/special/008547FN/vo_zixun.xml',
+    openSub : false,
+    width : '100%',
+    height : '100%'
+  };
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;所以我们很快的发现了带有<b><video></video></b>的标签，其中就有我们想要的视频原地址：
+```html
+  <source src="http://flv.bn.netease.com/videolib3/1603/16/aUzmv6975/SD/aUzmv6975-mobile.mp4" type="video/mp4">
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;将其复制到浏览器地址栏中，回车你就会惊奇的发现出现了下载对话框，点击确认，你就会将视频下载到本地。所以这段的代码可以利用<b>正则表达式</b>来获取地址：
+```python
+  html = requests.get(web_url)
+  pattern = re.compile(r'source src="(.*?)"', re.S | re.M | re.I)
+  real_s_url = pattern.findall(html.text)[0].encode('utf8')
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;但是，我肯定不会这样做滴，原因有三：首先下载下来的视频是标准视频，很多视频都会有高清和超高清视频，我们当自然要下载质量高的视频了；其二如果哪天人家看着直接放出视频原地址不顺眼，将该隐藏的隐藏掉，那就不好玩了，找也找不到了；其三牵扯到视频相关信息的下载。所以我们还是一步一步来吧。<br>
+<br>
+<strong>视频原地址</strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过<b>开发者工具</b>，我们挨个的找取以<b>.js</b>或<b>.xml</b>结尾的请求url，发现带有<b>1000_VBHBGAC2L.xm</b>的这个url中有我们想要的东西：在<b><flv></flv></b>中就是我们要找的视频原地址，一共有6个，分别在<b><flvUrl></flvUrl>、<hdUrl></hdUrl>、<shdUrl></shdUrl></b>中，这三种标签分别代表视频为：标清、高清、超高清。（flv和flv4对我们没有很大的影响，所以可以归纳为三个url）
+我们要做的就是将这里面对应的视频清晰度最好的地址获取到。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这段文件的请求<b>url</b>为：http://xml.ws.126.net/video/2/L/1000_VBHBGAC2L.xml ，打开多个视频我们可以看到其中有些部分是不会改变的：<b>http://xml.ws.126.net/video/</b>和<b>.xml</b>。所以我们要做就是<b>构造</b>这类请求的<b>url</b>。
+通过观察我们可以发现<b>2</b>和<b>L</b>是<b>VBHBGAC2L</b>的最后两个字母，而<b>_VBHBGAC2L</b>前面的<b>1000</b>,我们可以在网页源代码中找得到：<b>topicId='1000'</b>。所以我们可以通过以上的分析得到下面这段代码（我们将<b>VBHBGAC2L</b>作为<b>id</b>）：
+```python
+  html = requests.get(web_url, headers=header)
+  pattern = re.compile(r'topicid : "(.*?)"', re.S | re.M | re.I)
+  cid = pattern.findall(html.text)[0].encode('utf8')  # 获取topicid
+  id = [web_url][0]  # 将url进行list处理获取id
+  # 构造url
+  req_url = 'http://xml.ws.126.net/video/' + id[-7] + '/' + id[-6] + '/' + cid + '_' + id[-14: -5] + '.xml'
+```
+然后通过<b>GET</b>请求访问这个<b>req_url</b>得到<b>xml</b>文件，进行解析，得到清晰度较高的视频地址。<br>
+<br>
+<strong>视频信息</strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;接着再通过<b>开发者工具</b>，找到了<b>http://sdk.comment.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/BHBGAC2L008535RB?ibc=jssdk&callback=tool1002321329669789156_1509093181749&_=1509093181750</b>这个<b>url</b>,它所返回的数据正是要找的大部分视频信息。要获取这个信息的办法还是构造请求的<b>url</b>,但是发现这个url很长，url中还包含着很多的参数，再怎么查找发现其他的包里面没有关于其参数的信息。所以我们要想办法去简化其<b>url</b>。经过测试发现，将<b>?ibc=jssdk&callback=tool1002321329669789156_1509093181749&_=1509093181750</b>这些参数去掉我们还是可以访问到这个文件。所以我们只需要构造类似于<b>http://sdk.comment.163.com/api/v1/products/a2869674571f77b5a0867c3d71db5856/threads/BHBGAC2L008535RB</b>的<b>url</b>。经过多次试验，发现其中<b>http://sdk.comment.163.com/api/v1/products/</b>和<b>/threads/</b>不会改变。我们只需要获取到<b>a2869674571f77b5a0867c3d71db5856</b>和<b>BHBGAC2L008535RB</b>就可以了。结合之前的思路，我们很快在网页源代码中发现了其参数：<b>"docId" :  "BHBGAC2L008535RB"</b>和<b>"productKey" : "a2869674571f77b5a0867c3d71db5856"</b>。所以我们可以通过以上的分析得到下面这段代码：
+```python
+  pattern = re.compile(r'"productKey" : "(.*?)"', re.S | re.M | re.I)
+  product_key = pattern.findall(html.text)[0].encode('utf8')
+  try:
+      pattern = re.compile(r'"docId" :  "(.*?)"', re.S | re.M | re.I)
+      doc_id = pattern.findall(html.text)[0].encode('utf8')
+  except:
+      doc_id = pattern.findall(html.text)[0].encode('utf8')
+  mess_url = 'http://sdk.comment.163.com/api/v1/products/' + product_key + '/threads/' + doc_id
+```
+然后通过<b>GET</b>请求访问这个<b>mess_url</b>得到<b>JSON</b>文件，进行解析，得到其中关于视频的信息。（还有其他的信息的获取方法类似与上面所说）<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最后就是将获取的内容全部存入数据库中，然后进行更新操作，这部分的内容和前面的类似，就不在这里赘述了。
+<b></b>
+
 以上纯属个人兴趣爱好，欢迎多多提意见，如有冒犯，尽请谅解，不喜勿喷！
 
 
