@@ -240,9 +240,8 @@ class WangYi(object):
         except Exception as e:
             conn.rollback()
             print (e)
-        conn.close()
 
-    def wy_check(self, web_url):
+    def wang_yi_check(self, web_url):
         flag1 = 0
         flag2 = 0
         flag3 = 0
@@ -301,11 +300,11 @@ class WangYi(object):
             conn.rollback()
             print (e)
         conn.close()
-        lost_url = self.wy_update(web_url, flag1, flag2, flag3, video_message)
+        lost_url = self.wang_yi_update(web_url, flag1, flag2, flag3, video_message)
         return lost_url
 
     @staticmethod
-    def wy_update(web_url, flag1, flag2, flag3, video_message):
+    def wang_yi_update(web_url, flag1, flag2, flag3, video_message):
         lost_url = ''
         check = ''
         conn = MySQLdb.connect(

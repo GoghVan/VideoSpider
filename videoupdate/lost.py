@@ -3,7 +3,7 @@ import MySQLdb
 import os
 from video.src.log import Log
 from video.src.timenow import TimeNow
-from video.videourl.renren import RenRen
+from video.videourl.rr import RenRen
 from video.videourl.wangyi import *
 
 

@@ -51,7 +51,7 @@ class RenRen(object):
             video_id = re.search(r'[0-9]+', url).group()                                                # 获取视频的ID
             api_url = 'http://web.rr.tv/v3plus/video/detail'                                            # 调用信息接口
             req_js = requests.post(api_url, data={'videoId': video_id}, headers=headers).content        # 发送请求获取数据
-            req_py = json.loads(req_js)                                                                 # 将JSON转为Python
+            req_py = json.loads(req_js)                                                                 # 将JSON数据转换为Python数据
             video_name = req_py["data"]["videoDetailView"]["title"]                                     # 获取视频名称
             video_author = req_py["data"]["videoDetailView"]["author"]["nickName"]                      # 获取视频作者
             video_comment_count = req_py["data"]["videoDetailView"]["commentCount"]                     # 获取视频评论数
@@ -59,39 +59,38 @@ class RenRen(object):
             video_time = req_py["data"]["videoDetailView"]["duration"]                                  # 获取视频时长
             video_view_count = req_py["data"]["videoDetailView"]["viewCount"]                           # 获取视频观看次数
             video_size = req_py["data"]["videoDetailView"]["videoFileView"][1]["fileSize"]              # 视频大小
+            print type(video_name)
             return video_name, video_author, video_time, video_view_count, video_comment_count, \
-                video_fav_count, video_size, video_id
+                   video_fav_count, video_size, video_id
         except Exception as e:
             print (e)
 
-    def rr_mysql(self, url):
-        video_url = self.rr_url(url)
-        video_message = self.rr_message(url)
-        download_video = DownloadVideo(video_url, video_message[0], "renren")
-        video_url_file = download_video.video_download()
+    @staticmethod
+    def rr_mysql(url, video_url, video_message, video_url_file):
 
-        conn = MySQLdb.connect(
-            host='localhost',
-            port=3306,
-            user='root',
-            passwd='1479',
-            db='videos',
-            charset="utf8",
-        )
-        cur = conn.cursor()
-        sql = "INSERT INTO rr(Video_Id, Video_Name, Video_Url, Video_Author, Video_Time, Video_Size, " \
-            "Video_ViewCount, Video_CommentCount, Video_FavCount, Video_Web, File_Url) " \
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        try:
-            cur.execute(sql, (video_message[7], video_message[0], video_url, video_message[1], video_message[2],
-                        video_message[6], video_message[3], video_message[4], video_message[5], url,
-                        video_url_file))
-            cur.close()
-            conn.commit()
-        except Exception as e:
-            conn.rollback()
-            print (e)
-        conn.close()
+        if video_url:
+            conn = MySQLdb.connect(
+                host='localhost',
+                port=3306,
+                user='root',
+                passwd='1479',
+                db='videos',
+                charset="utf8",
+            )
+            cur = conn.cursor()
+            sql = "INSERT INTO rr(Video_Id, Video_Name, Video_Url, Video_Author, Video_Time, Video_Size, " \
+                  "Video_ViewCount, Video_CommentCount, Video_FavCount, Video_Web, File_Url) " \
+                  "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            try:
+                cur.execute(sql, (video_message[7], video_message[0], video_url, video_message[1], video_message[2],
+                                  video_message[6], video_message[3], video_message[4], video_message[5], url,
+                                  video_url_file))
+                cur.close()
+                conn.commit()
+            except Exception as e:
+                conn.rollback()
+                print (e)
+            conn.close()
 
     def lost_update(self, url):
 
@@ -123,10 +122,10 @@ class RenRen(object):
         except Exception as e:
             conn.rollback()
             print (e)
-        conn.close()
         mess = TimeNow.get_time() + ' 注意 : [ ' + video_message[0].encode('utf8') + ' ] 信息已补全，请注意查看！'
         print (mess)
         Log.log(mess)
+        conn.close()
 
     def lost_mess(self, url):
         conn = MySQLdb.connect(
@@ -139,19 +138,19 @@ class RenRen(object):
         )
 
         try:
-            cur = conn.cursor()
-            sql = "SELECT File_Url,Video_Size,Video_Name " \
+            cur_one = conn.cursor()
+            sql_one = "SELECT File_Url,Video_Size,Video_Name " \
                       "FROM rr " \
                       "WHERE Video_Web = %s "
 
-            cur.execute(sql, url)
-            content = cur.fetchone()
-            cur.close()
+            cur_one.execute(sql_one, url)
+            content_one = cur_one.fetchone()
+            cur_one.close()
             conn.commit()
 
-            if content:
-                if not (os.path.exists(content[0])):
-                    mess = TimeNow.get_time() + ' 注意 : [ ' + str(content[2]) + ' ] 信息丢失！'
+            if content_one:
+                if not (os.path.exists(content_one[0])):
+                    mess = TimeNow.get_time() + ' 注意 : [ ' + str(content_one[2]) + ' ] 信息丢失！'
                     print (mess)
                     Log.log(mess)
                     self.lost_update(url)
@@ -159,12 +158,19 @@ class RenRen(object):
         except Exception as e:
             conn.rollback()
             print (e)
+
         conn.close()
 
-    def rr_check(self, url):
+    def rr_update(self, url):
+        global flag1, flag2, flag3, flag4, flag5, flag6, number
+        global lost_url
+        lost_url = ''
         flag1 = 0
         flag2 = 0
         flag3 = 0
+        flag4 = 0
+        flag5 = 0
+        flag6 = 0
         number = 0
 
         conn = MySQLdb.connect(
@@ -219,23 +225,9 @@ class RenRen(object):
         except Exception as e:
             conn.rollback()
             print (e)
-        conn.close()
-        lost_url = self.rr_update(url, flag1, flag2, flag3, video_message)
-        return lost_url
 
-    @staticmethod
-    def rr_update(url, flag1, flag2, flag3, video_message):
-        lost_url = ''
-        check = ''
-        conn = MySQLdb.connect(
-            host='localhost',
-            port=3306,
-            user='root',
-            passwd='1479',
-            db='videos',
-            charset='utf8',
-        )
         if flag1 and flag2 and flag3:
+            check = ''
             try:
                 cur3 = conn.cursor()
                 sql3 = "SELECT Video_ViewCount,Video_CommentCount,Video_FavCount " \
@@ -256,9 +248,8 @@ class RenRen(object):
 
                 if check[0].encode('utf8') != str(video_message[3]):
                     cur4.execute(sql4, (video_message[3], url))
-                    mess = TimeNow.get_time() + " 视频 : [ " + video_message[0].encode('utf8') \
-                        + " ] 的Video_ViewCount : " \
-                        + check[0].encode('utf8') + ", 现在Video_ViewCount : " + str(video_message[3])
+                    mess = TimeNow.get_time() + " 视频 : [ " + video_message[0].encode('utf8') + " ] 的Video_ViewCount : " \
+                            + check[0].encode('utf8') + ", 现在Video_ViewCount : " + str(video_message[3])
                     print (mess)
                     Log.log(mess)
                     flag4 = 0
@@ -274,9 +265,8 @@ class RenRen(object):
 
                 if check[1].encode('utf8') != str(video_message[4]):
                     cur5.execute(sql5, (video_message[4], url))
-                    mess = TimeNow.get_time() + " 视频 : [ " + video_message[0].encode('utf8') \
-                        + " ] 的Video_CommentCount : " \
-                        + check[1].encode('utf8') + ", 现在Video_CommentCount : " + str(video_message[4])
+                    mess = TimeNow.get_time() + " 视频 : [ " + video_message[0].encode('utf8') + " ] 的Video_CommentCount : " \
+                            + check[1].encode('utf8') + ", 现在Video_CommentCount : " + str(video_message[4])
                     print (mess)
                     Log.log(mess)
                     flag5 = 0
@@ -292,9 +282,8 @@ class RenRen(object):
 
                 if check[2].encode('utf8') != str(video_message[5]):
                     cur6.execute(sql6, (video_message[5], url))
-                    mess = TimeNow.get_time() + " 视频 : [ " + video_message[0].encode('utf8') \
-                        + " ] 的Video_FavCount : " \
-                        + check[2].encode('utf8') + ", 现在Video_FavCount : " + str(video_message[5])
+                    mess = TimeNow.get_time() + " 视频 : [ " + video_message[0].encode('utf8') + " ] 的Video_FavCount : " \
+                            + check[2].encode('utf8') + ", 现在Video_FavCount : " + str(video_message[5])
                     print (mess)
                     Log.log(mess)
                     flag6 = 0
