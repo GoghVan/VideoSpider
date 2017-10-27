@@ -8,5 +8,5 @@ class Log(object):
     # 日志写入文件
     @staticmethod
     def log(message):
-        with open(r'F:\SoftProgram\log/renren.txt', 'a+') as file_mess:
+        with open(r'F:\SoftProgram\log\log.txt', 'a+') as file_mess:
             file_mess.write('\n' + message)

@@ -59,44 +59,11 @@ class RenRen(object):
             video_time = req_py["data"]["videoDetailView"]["duration"]                                  # 获取视频时长
             video_view_count = req_py["data"]["videoDetailView"]["viewCount"]                           # 获取视频观看次数
             video_size = req_py["data"]["videoDetailView"]["videoFileView"][1]["fileSize"]              # 视频大小
+            print type(video_name)
             return video_name, video_author, video_time, video_view_count, video_comment_count, \
                    video_fav_count, video_size, video_id
         except Exception as e:
             print (e)
-
-    def lost_update(self, url):
-
-        video_url = self.rr_url(url)
-        video_message = self.rr_message(url)
-        download_video = DownloadVideo(video_url, video_message)
-        video_url_file = download_video.video_download()
-
-        conn = MySQLdb.connect(
-            host='localhost',
-            port=3306,
-            user='root',
-            passwd='1479',
-            db='videos',
-            charset="utf8",
-        )
-
-        try:
-            cur = conn.cursor()
-            sql = "UPDATE rr " \
-                  "SET Video_Id=%s,Video_Name=%s,Video_Url=%s,Video_Author=%s,Video_Time=%s,Video_Size=%s," \
-                  "Video_ViewCount=%s,Video_CommentCount=%s,Video_FavCount=%s,File_Url=%s " \
-                  "WHERE Video_Web=%s"
-            cur.execute(sql, (video_message[7], video_message[0], video_url, video_message[1],
-                              video_message[2],video_message[6], video_message[3], video_message[4],
-                              video_message[5], video_url_file, url))
-            cur.close()
-            conn.commit()
-        except Exception as e:
-            conn.rollback()
-            print (e)
-        mess = TimeNow.get_time() + ' 注意 : [ ' + video_message[0].encode('utf8') + ' ] 信息已补全，请注意查看！'
-        print (mess)
-        Log.log(mess)
 
     @staticmethod
     def rr_mysql(url, video_url, video_message, video_url_file):
@@ -124,6 +91,41 @@ class RenRen(object):
                 conn.rollback()
                 print (e)
             conn.close()
+
+    def lost_update(self, url):
+
+        video_url = self.rr_url(url)
+        video_message = self.rr_message(url)
+        download_video = DownloadVideo(video_url, video_message[0], "renren")
+        video_url_file = download_video.video_download()
+
+        conn = MySQLdb.connect(
+            host='localhost',
+            port=3306,
+            user='root',
+            passwd='1479',
+            db='videos',
+            charset="utf8",
+        )
+
+        try:
+            cur = conn.cursor()
+            sql = "UPDATE rr " \
+                  "SET Video_Id=%s,Video_Name=%s,Video_Url=%s,Video_Author=%s,Video_Time=%s,Video_Size=%s," \
+                  "Video_ViewCount=%s,Video_CommentCount=%s,Video_FavCount=%s,File_Url=%s " \
+                  "WHERE Video_Web=%s"
+            cur.execute(sql, (video_message[7], video_message[0], video_url, video_message[1],
+                              video_message[2], video_message[6], video_message[3], video_message[4],
+                              video_message[5], video_url_file, url))
+            cur.close()
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            print (e)
+        mess = TimeNow.get_time() + ' 注意 : [ ' + video_message[0].encode('utf8') + ' ] 信息已补全，请注意查看！'
+        print (mess)
+        Log.log(mess)
+        conn.close()
 
     def lost_mess(self, url):
         conn = MySQLdb.connect(
@@ -238,7 +240,6 @@ class RenRen(object):
             except Exception as e:
                 conn.rollback()
                 print (e)
-
             try:
                 cur4 = conn.cursor()
                 sql4 = "UPDATE rr " \
