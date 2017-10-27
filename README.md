@@ -280,8 +280,9 @@ import requests
       doc_id = pattern.findall(html.text)[0].encode('utf8')
   mess_url = 'http://sdk.comment.163.com/api/v1/products/' + product_key + '/threads/' + doc_id
 ```
-然后通过<b>GET</b>请求访问这个<b>mess_url</b>得到<b>JSON</b>文件，进行解析，得到其中关于视频的信息。<br>
-
+然后通过<b>GET</b>请求访问这个<b>mess_url</b>得到<b>JSON</b>文件，进行解析，得到其中关于视频的信息。（还有其他的信息的获取方法类似与上面所说）<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最后就是将获取的内容全部存入数据库中，然后进行更新操作，这部分的内容和前面的类似，就不在这里赘述了。
 <b></b>
 
 以上纯属个人兴趣爱好，欢迎多多提意见，如有冒犯，尽请谅解，不喜勿喷！
