@@ -294,7 +294,7 @@ import requests
   <br>
   
   <h3>凤凰视频</h3>
-  <b>凤凰视频包含的种类繁多，除了直通车、天天看、星期7、大放送四个模块，其余都可以下载。<br>
+  <b>凤凰视频包含的种类繁多，除了直通车、天天看、星期7、大放送四个模块，其余都可以下载。</b><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;打开其中一个视频：http://v.ifeng.com/video_9119714.shtml <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这个网页视频的url都还是蛮规整的0（！_ ！）0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;观察网页，我们可以获取到的信息有：视频名称、视频上传时间、视频播放时长、视频的观看量、视频的点赞数、视频的不点赞数、视频的评论数等等。<br>
