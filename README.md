@@ -285,6 +285,107 @@ import requests
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最后就是将获取的内容全部存入数据库中，然后进行更新操作，这部分的内容和前面的类似，就不在这里赘述了。
 <b></b>
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;因为项目数量的增加，发现不同项目中的类似代码冗余量太大，一方面解析模块代码量过于庞大，另一方面程序运行容易出问题。所以对以上问题作出了修改：<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（1）由于长时间运行代码，在不断地向目的服务器发送<b>url</b>，请求数据的时候可能会由于对方服务器访问量过多或者本机的网络太差，一次请求不能获得我们所需要的数据（404或者页面丢失），我们需要多次的请求，所以在<b>src模块中加入<b>retey_get</b>/<b>retry_post</b>：当返回的状态码错误时自动的再次请求。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（2）将<b>lost_update</b>从各个解析模块中提出，进行整合放入一个<b>lostupdate</b>模块中，在模块内对不同的需求进行不同的任务分配。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（3）将<b>lost_mess</b>从各个解析模块中提出，进行整合放入一个<b>lostmess</b>模块中，在模块内对不同的需求进行不同的任务分配。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（4）将<b>ckeck_url</b>从各个解析模块中提出，进行整合放入一个<b>urlcheck</b>模块中，在模块内对不同的需求进行不同的任务分配。<br>
+（更改后的调用与之前的一样）<br>
+  <br>
+  
+  <h3>凤凰视频</h3>
+  <b>凤凰视频包含的种类繁多，除了直通车、天天看、星期7、大放送四个模块，其余都可以下载。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;打开其中一个视频：http://v.ifeng.com/video_9119714.shtml <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这个网页视频的url都还是蛮规整的0（！_ ！）0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;观察网页，我们可以获取到的信息有：视频名称、视频上传时间、视频播放时长、视频的观看量、视频的点赞数、视频的不点赞数、视频的评论数等等。<br>
+  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;右键点击<b></b>网页查看源代码，仔细浏览后发现唯一可能有用的信息：
+```python
+ <script>
+        var videoinfo = {
+            "id":"9119714",
+            "vid": "56ca21e4-59df-49ab-8afa-bb38317a13cd",
+            "name": "贾玲爆笑上演多版本“来自星星的你” 还是东北女神最传情",
+            "duration": "572",
+            "url": "http://v.ifeng.com/video_9119714.shtml",
+            "skey":"746F26",
+            "videoLargePoster": "http://p1.ifengimg.com/a/2017_44/3ce23a9f6783667.jpg",
+            "playerName":"vFreePlayer",  
+            "mUrl":"http://v.ifeng.com/dyn/m/video/9119714/index.shtml",
+            "categoryId":"57-60",
+            "mediaId":"764981",
+            "adtype":"5",
+            "categoryPath":"variety",
+            "danmaku": "",
+            "columnName":"开心大米粒",
+            "CPId": '166',
+            "keywords": '百变大咖秀 贾玲 何炅',
+            "createdate": '2017-11-01 20:55:02'
+        };
+    </script>
+```
+信息量不全，所以我们暂且先放弃从源代码中获取信息的方式。<br>
+<strong>视频信息+原地址</strong>（这次两个内容是连在一起的，所以一并介绍）<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;接着再通过<b>开发者工具</b>，找到了<b>http://tv.ifeng.com/h6/9119714/video.json?callback=callback&msg=9119714&rt=js&param=play&_=1509805191192</b>这个<b>url</b>，其<b>Preview</b>中有我们想要获取的部分信息，包括视频的原地址。经过简化后发现<b>http://tv.ifeng.com/h6/9119714/video.json?callback=callback&msg=9119714&rt=js</b>也可以访问到我们所想问的数据(json)：
+ ```python
+ {
+    "preview": {
+        "path": "http://p0.ifengimg.com/pmop/2017/11/01/70006145-b563-40f6-bad2-cc974bd09e5a.jpg",
+        "sub_width": 128,
+        "time_span": 6,
+        "sub_height": 72,
+        "width": 1280,
+        "sub_picture_number": 95,
+        "picture_number": 1,
+        "height": 720
+    },
+    "videoLargePoster": "http://p1.ifengimg.com/a/2017_44/3ce23a9f6783667.jpg",
+    "cpId": "166",
+    "createdate": "2017-11-01 20:55:02",
+    "bqSrc": "http://ips.ifeng.com/video19.ifeng.com/video09/2017/11/01/12610851-102-009-205616.mp4",
+    "mediaId": 764981,
+    "title": "贾玲爆笑上演多版本“来自星星的你” 还是东北女神最传情",
+    "url": "http://v.ifeng.com/video_9119714.shtml",
+    "videoPlayUrl": "http://ips.ifeng.com/video19.ifeng.com/video09/2017/11/01/12610851-102-009-205616.mp4",
+    "vid": "56ca21e4-59df-49ab-8afa-bb38317a13cd",
+    "duration": 572,
+    "posterUrl": "http://p1.ifengimg.com/a/2017_44/3ce23a9f6783667.jpg",
+    "anchor": [],
+    "CPId": "166",
+    "aspect": "16:9",
+    "name": "贾玲爆笑上演多版本“来自星星的你” 还是东北女神最传情",
+    "guid": "56ca21e4-59df-49ab-8afa-bb38317a13cd",
+    "gqSrc": "http://ips.ifeng.com/video19.ifeng.com/video09/2017/11/01/12610851-102-009-205616.mp4",
+    "id": 9119714,
+    "keyword": "百变大咖秀 贾玲 何炅",
+    "categoryId": "57-60",
+    "mediaName": "开心大米粒",
+    "columnName": "开心大米粒"
+}
+ ```
+ 其中<b></b>"createdate"是视频的上传时间，<b>"bqSrc"</b>、<b>"videoPlayUrl"</b>、<b>"gqSrc"</b>为视频的原地址（就目前测试来看下载下来的视频没有什么区别），<b>"title"</b>为视频的名称，<b>"mediaName"</b>、<b>"columnName"</b>为视频上传者（只有极少数不一样），<b>"vid"</b>、<b>"guid"</b>为重要的参数（两者都一样），之后要用的到。<br>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;所以接下里的任务就是如何构造此请求<b>url</b>。经过测试发现只有<b>msg=9119714</b>中的参数和前面的<b>id</b>在变化，其实两者是同一个东西，所以只要获取到<b>web_url</b>中的<b>id</b>，拼接到其中即可：
+ ```python
+ 
+  pattern = re.compile(r'http://v.ifeng.com/video_(.*?)\.shtml', re.S | re.I | re.M)
+  video_id = pattern.findall(web_url)[0]
+  req_url = 'http://tv.ifeng.com/h6/' + video_id + '/video.json?callback=callback&msg=' + video_id + '&rt=js'
+```
+进行访问时一定要加头部<b>（headers）</b>，之后对其进行解析获取信息就好。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;但是还是有一些信息没有获取到：视频的播放量、点赞数、不点赞数、评论量。通过逐一排查后，我们发现
+分别在一下几个<b>url</b>中（逐一对应）：<b>http://survey.news.ifeng.com/getaccumulator_weight.php?format=js&serverid=2&key=56ca21e4-59df-49ab-8afa-bb38317a13cd&callback=f15f8766f6240</b>、<b>http://survey.news.ifeng.com/getaccumulator_ext.php?callback=jQuery17107289447875246187_1509805190738&key=56ca21e4-59df-49ab-8afa-bb38317a13cdding&format=js&serverid=1&var=ding</b>、<b>http://survey.news.ifeng.com/getaccumulator_ext.php?callback=jQuery17107289447875246187_1509805190739&key=56ca21e4-59df-49ab-8afa-bb38317a13cdcai&format=js&serverid=1&var=cai</b>、<b>http://comment.ifeng.com/getv.php?callback=jQuery17107289447875246187_1509805190737&job=3&format=js&docurl=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>。由于其<b>url</b>太过于复杂，所以首先还是先进性简化，简化后为（逐一对应）：<b>http://survey.news.ifeng.com/getaccumulator_weight.php?format=js&key=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>、<b>http://survey.news.ifeng.com/getaccumulator_ext.php?key=56ca21e4-59df-49ab-8afa-bb38317a13cdding</b>、<b>http://survey.news.ifeng.com/getaccumulator_ext.php?key=56ca21e4-59df-49ab-8afa-bb38317a13cdcai</b>、<b>http://comment.ifeng.com/getv.php?docurl=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>。其中每一个对应的<b>key</b>都是相同的，即前面所获取到的<b>"vid"</b>与<b>"guid"</b>，所以讲其拼接到其中即可：
+```python
+  # 获取视频观看数(str)
+  req_url = 'http://survey.news.ifeng.com/getaccumulator_weight.php?key=' + vid
+  # 视频点赞数(str)
+  req_url = 'http://survey.news.ifeng.com/getaccumulator_ext.php?key=' + vid + 'ding'
+  # 视频不点赞数(str)
+  req_url = 'http://survey.news.ifeng.com/getaccumulator_ext.php?key=' + vid + 'cai'
+  # 视频评论数(str)
+  req_url = 'http://comment.ifeng.com/getv.php?job=3&format=js&docurl=' + vid
+```
+同理进行访问时一定要加头部<b>（headers）</b>，之后对其进行解析获取信息就好。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最后就是将获取的内容全部存入数据库中，然后进行更新操作，这部分的内容和前面的类似，就不在这里赘述了。
 以上纯属个人兴趣爱好，欢迎多多提意见，如有冒犯，尽请谅解，不喜勿喷！
 
 
