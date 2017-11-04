@@ -286,7 +286,7 @@ import requests
 <b></b>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;因为项目数量的增加，发现不同项目中的类似代码冗余量太大，一方面解析模块代码量过于庞大，另一方面程序运行容易出问题。所以对以上问题作出了修改：<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（1）由于长时间运行代码，在不断地向目的服务器发送<b>url</b>，请求数据的时候可能会由于对方服务器访问量过多或者本机的网络太差，一次请求不能获得我们所需要的数据（404或者页面丢失），我们需要多次的请求，所以在<b>src模块中加入<b>retey_get</b>/<b>retry_post</b>：当返回的状态码错误时自动的再次请求。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（1）由于长时间运行代码，在不断地向目的服务器发送<b>url</b>，请求数据的时候可能会由于对方服务器访问量过多或者本机的网络太差，一次请求不能获得我们所需要的数据（404或者页面丢失），我们需要多次的请求，所以在<b>src</b>模块中加入<b>retey_get</b>/<b>retry_post</b>：当返回的状态码错误时自动的再次请求。<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（2）将<b>lost_update</b>从各个解析模块中提出，进行整合放入一个<b>lostupdate</b>模块中，在模块内对不同的需求进行不同的任务分配。<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（3）将<b>lost_mess</b>从各个解析模块中提出，进行整合放入一个<b>lostmess</b>模块中，在模块内对不同的需求进行不同的任务分配。<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（4）将<b>ckeck_url</b>从各个解析模块中提出，进行整合放入一个<b>urlcheck</b>模块中，在模块内对不同的需求进行不同的任务分配。<br>
