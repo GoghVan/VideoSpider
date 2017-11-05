@@ -387,7 +387,12 @@ import requests
 ```
 进行访问时一定要加头部<b>（headers）</b>，之后对其进行解析获取信息就好。
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;但是还是有一些信息没有获取到：视频的播放量、点赞数、不点赞数、评论量。通过逐一排查后，我们发现
-分别在一下几个<b>url</b>中（逐一对应）：<b>http://survey.news.ifeng.com/getaccumulator_weight.php?format=js&serverid=2&key=56ca21e4-59df-49ab-8afa-bb38317a13cd&callback=f15f8766f6240</b>、<b>http://survey.news.ifeng.com/getaccumulator_ext.php?callback=jQuery17107289447875246187_1509805190738&key=56ca21e4-59df-49ab-8afa-bb38317a13cdding&format=js&serverid=1&var=ding</b>、<b>http://survey.news.ifeng.com/getaccumulator_ext.php?callback=jQuery17107289447875246187_1509805190739&key=56ca21e4-59df-49ab-8afa-bb38317a13cdcai&format=js&serverid=1&var=cai</b>、<b>http://comment.ifeng.com/getv.php?callback=jQuery17107289447875246187_1509805190737&job=3&format=js&docurl=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>。由于其<b>url</b>太过于复杂，所以首先还是先进性简化，简化后为（逐一对应）：<b>http://survey.news.ifeng.com/getaccumulator_weight.php?format=js&key=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>、<b>http://survey.news.ifeng.com/getaccumulator_ext.php?key=56ca21e4-59df-49ab-8afa-bb38317a13cdding</b>、<b>http://survey.news.ifeng.com/getaccumulator_ext.php?key=56ca21e4-59df-49ab-8afa-bb38317a13cdcai</b>、<b>http://comment.ifeng.com/getv.php?docurl=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>。其中每一个对应的<b>key</b>都是相同的，即前面所获取到的<b>"vid"</b>与<b>"guid"</b>，所以讲其拼接到其中即可：
+分别在一下几个<b>url</b>中（逐一对应）：<br>
+<b>http://survey.news.ifeng.com/getaccumulator_weight.php?format=js&serverid=2&key=56ca21e4-59df-49ab-8afa-bb38317a13cd&callback=f15f8766f6240</b>、<br>
+<b>http://survey.news.ifeng.com/getaccumulator_ext.php?callback=jQuery17107289447875246187_1509805190738&key=56ca21e4-59df-49ab-8afa-bb38317a13cdding&format=js&serverid=1&var=ding</b>、<br>
+<b>http://survey.news.ifeng.com/getaccumulator_ext.php?callback=jQuery17107289447875246187_1509805190739&key=56ca21e4-59df-49ab-8afa-bb38317a13cdcai&format=js&serverid=1&var=cai</b>、<br>
+<b>http://comment.ifeng.com/getv.php?callback=jQuery17107289447875246187_1509805190737&job=3&format=js&docurl=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>。由于其<b>url</b>太过于复杂，所以首先还是先进性简化，简化后为（逐一对应）：<br>
+<b>http://survey.news.ifeng.com/getaccumulator_weight.php?format=js&key=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>、<br><b>http://survey.news.ifeng.com/getaccumulator_ext.php?key=56ca21e4-59df-49ab-8afa-bb38317a13cdding</b>、<br><b>http://survey.news.ifeng.com/getaccumulator_ext.php?key=56ca21e4-59df-49ab-8afa-bb38317a13cdcai</b>、<br><b>http://comment.ifeng.com/getv.php?docurl=56ca21e4-59df-49ab-8afa-bb38317a13cd</b>。其中每一个对应的<b>key</b>都是相同的，即前面所获取到的<b>"vid"</b>与<b>"guid"</b>，所以讲其拼接到其中即可：
 ```python
   # 获取视频观看数(str)
   req_url = 'http://survey.news.ifeng.com/getaccumulator_weight.php?key=' + vid
