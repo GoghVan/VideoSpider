@@ -459,7 +459,16 @@ sohuStartMonitor:"https://vm.aty.sohu.com/pvlog?vp=s&c=14908&v1=19843&v2=19897&p
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;项目一开始着手做的就是搜狐视频的视频与信息爬取，当时因为技术、知识有限，半个学期下来一直都没有太大的进展，所以这学期就着手从最简单的人人视频开始爬取，然后是网易视频，接着是凤凰视频，再接着是芒果TV，最后是搜狐视频。
 以上纯属个人兴趣爱好，欢迎多多提意见，如有冒犯，尽请谅解，不喜勿喷！
 
-
+```python
+  # 获取视频观看数(str)
+  req_url = 'http://survey.news.ifeng.com/getaccumulator_weight.php?key=' + vid
+  # 视频点赞数(str)
+  req_url = 'http://survey.news.ifeng.com/getaccumulator_ext.php?key=' + vid + 'ding'
+  # 视频不点赞数(str)
+  req_url = 'http://survey.news.ifeng.com/getaccumulator_ext.php?key=' + vid + 'cai'
+  # 视频评论数(str)
+  req_url = 'http://comment.ifeng.com/getv.php?job=3&format=js&docurl=' + vid
+```
 
 
 
