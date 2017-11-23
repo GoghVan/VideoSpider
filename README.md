@@ -460,14 +460,12 @@ sohuStartMonitor:"https://vm.aty.sohu.com/pvlog?vp=s&c=14908&v1=19843&v2=19897&p
 以上纯属个人兴趣爱好，欢迎多多提意见，如有冒犯，尽请谅解，不喜勿喷！
 
 ```python
-  # 获取视频观看数(str)
-  req_url = 'http://survey.news.ifeng.com/getaccumulator_weight.php?key=' + vid
-  # 视频点赞数(str)
-  req_url = 'http://survey.news.ifeng.com/getaccumulator_ext.php?key=' + vid + 'ding'
-  # 视频不点赞数(str)
-  req_url = 'http://survey.news.ifeng.com/getaccumulator_ext.php?key=' + vid + 'cai'
-  # 视频评论数(str)
-  req_url = 'http://comment.ifeng.com/getv.php?job=3&format=js&docurl=' + vid
+  video_url = []
+    for su, clip, ck in zip(data['data']['su'], data['data']['clipsURL'], data['data']['ck']):
+      req_url = 'http://' + host + '/?prot=9&prod=flash&pt=1&file=' + clip + '&new=' + su + '&key=' + \
+          ck + '&vid=' + video_id + '&uid=' + str(int(time.time()*1000)) + '&t=' + str(random.random()) + '&rb=1'
+      data = json.loads(retry_get(req_url, self.headers))
+      video_url.append(str(data['url']))
 ```
 
 
