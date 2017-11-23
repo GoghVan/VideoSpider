@@ -425,12 +425,15 @@ import requests
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这两个url最大的最大的不同是在/94766453和/n600241945，一般来说最后的参数基本上都是vid并且只是为单纯的数字，但此时多出了一个n,那么就要将解析部分分为两种：vid带n的和不带n的。<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)vid不带n的。
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过正则匹配，获得网页源代码中的vid号，或者正则匹配从web_url中得到vid。然后我们通过开发者工具找到了关于视频一些信息的请求url，进行构造：
+
 ```python
   req_url = "http://my.tv.sohu.com/play/videonew.do?vid=%s&referer=http://my.tv.sohu.com" % vid
 ```
+
 我们可以通过访问上面这个url，来获取到许多有用的数据（获取下来的是JSON格式的需要进行json.loads()操作）：host、video_name、video_size、video_author、video_time、su、clip、ck。接着通过对比:<br>
 sohuStartMonitor:"https://vm.aty.sohu.com/pvlog?vp=s&c=14908&v1=19843&v2=19897&p=wrapframe1&loc=CN3301&adstyle=wrapframe&du=65&adtime=15&trule=0&mx=1&al=9406238&out=0&au=1&vid=94766453&tvid=94766453&rt=6033a2f3380235b8feab335f171711f3&uv=15033813019205634143&uuid=9e712dd8-5868-3696-951f-e6cd95135608&UUID=9e712dd8-5868-3696-951f-e6cd95135608&vt=pgc&rd=my.tv.sohu.com&fee=0&isIf=0&suv=1708162045006877&uid=15033813019205634143&myTvUid=312813498&sz=1583_779&md=DClKrU8xiwkZo4meDBJol0sqMrdsUjP7w1nJdg==214&crid=0&scookie=1&ugcode=MTQoFmYvjCUqoPQu8A7_CvIVpcdohzfi4gHqggBZx_EoameDpqYl9JOaJqWpvX_zisALyWc5GUkBepTkx_PTCYkHgig3HWkuLxx0&ugu=312813498&ar=0&sign=GzWbD8e8dNE8mlctLpMPoB1KXSi34NeqK71v5H93xMRWeC8M3nJVw-vBZhvdnSYx&rip=60.12.8.177&sip=10.11.161.90&fip=60.12.8.177&url=https%3A//my.tv.sohu.com/us/312813498/94766453.shtml&ti=5byg5p+P6Iqd5L+p5YS/5a2Q5ZSx5q2M6Ieq5L+h5ruh5ruhIOaJi+iInui2s+i5iOeUu+mdouWPr+eIsQ==&tag=5byg5p+P6IqdIOiwoumchumUiyDosKLotKQg5aix5LmQ5pKt5oql&plat=pc&adplat=0&v1=19843&v2=19897&pagetype=1&suid=1708162045006877&w=1040&h=620&cheattype=0&sperotime=1511405757&tuv=15033813019205634143&encrysig=lVUqoJj2mcCfN2P2uEgsCfZjCrv5P-yn24E2ySXN8o8dAY6v<br>
 我们将利用上获得的部分参数进行构造原视频的url：
+
 ```python
   video_url = []
     for su, clip, ck in zip(data['data']['su'], data['data']['clipsURL'], data['data']['ck']):
@@ -439,14 +442,18 @@ sohuStartMonitor:"https://vm.aty.sohu.com/pvlog?vp=s&c=14908&v1=19843&v2=19897&p
       data = json.loads(retry_get(req_url, self.headers))
       video_url.append(str(data['url']))
 ```
+
 因为经过测试后发现，搜狐视频有一部分视频是不分段的，有一部分是分段的，但相比于芒果来说要好的很多（大家自行体会）。所以通过for循环,将视频原地址存到video_url中。
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2)vid带n的。
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;测试后发现，将带有n的vid带入上面的URL中，会返回回来错误的信息，所以通过实践与测试，我们发现在网页源代码中有vid，次vid与web_url中的vid不同，但是可以取得正确的数据，所以通过网页源代码中获取该视频的vid。<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;构造请求url:
+
 ```python
   req_url = 'http://hot.vrs.sohu.com/vrs_flash.action?vid=%s' % video_id
 ```
+
 我们可以通过访问上面这个url，来获取到许多有用的数据（获取下来的是JSON格式的需要进行json.loads()操作）：host、video_name、video_size、video_author、video_time、su、clip、ck。然后同理利用这些参数构造原视频url：
+
 ```python
   video_url = []
     for su, clip, ck in zip(data['data']['su'], data['data']['clipsURL'], data['data']['ck']):
@@ -455,6 +462,7 @@ sohuStartMonitor:"https://vm.aty.sohu.com/pvlog?vp=s&c=14908&v1=19843&v2=19897&p
       data = json.loads(retry_get(req_url, self.headers))
       video_url.append(str(data['url']))
 ```
+
 接下来就是下载与更新的操作了（人人那边有，就不在重复。）。
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;项目一开始着手做的就是搜狐视频的视频与信息爬取，当时因为技术、知识有限，半个学期下来一直都没有太大的进展，所以这学期就着手从最简单的人人视频开始爬取，然后是网易视频，接着是凤凰视频，再接着是芒果TV，最后是搜狐视频。
 以上纯属个人兴趣爱好，欢迎多多提意见，如有冒犯，尽请谅解，不喜勿喷！
