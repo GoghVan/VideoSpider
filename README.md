@@ -418,6 +418,45 @@ import requests
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;接着找到了https://vc.mgtv.com/v2/dynamicinfo?callback=jQuery182012115295195808984_1510472757793&_support=10000000&vid=4153263&_=1510472758501 ， 简化后https://vc.mgtv.com/v2/dynamicinfo?vid=4153263，同样可以得到相同的内容。里面有关于视频的播放量、点赞数、不点赞数。<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在后面的代码编写和测试过程中可能你会发现是不是的就会报代码错误（例如：<b>Connection aborted.', error(10054, '')</b>），但是通过软件或者浏览器就正确，但是有时候就会发现都不好使了，这是怎么回事呢？观察<b>http://202.109.167.175/c1/2017/10/30_0/47EF3DBB09BD495F5945834205F098D2_20171030_1_1_256_mp4</b> 我们们可以发现，其中有个<b>202.109.167.175 </b>IP字段，上网查了后发现这是一个江西省吉安市的电信IP号，极有可能芒果TV是用的此服务器，所以通过移动宽带去访问的过程中移动与电信之间的“桥”经常断，所易导致代码一直报错，或者视频一直下载不下来。要彻底解决这个问题，那就尽可能在电信网下工作。<br><br>
 
+<h3>搜狐视频</h3>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过上面四个实例，我就不在多说废话了，先讲一下大致的思路。搜狐视频主要有两种类型：<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.https://my.tv.sohu.com/us/312813498/94766453.shtml；<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.https://tv.sohu.com/20171106/n600241945.shtml;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这两个url最大的最大的不同是在/94766453和/n600241945，一般来说最后的参数基本上都是vid并且只是为单纯的数字，但此时多出了一个n,那么就要将解析部分分为两种：vid带n的和不带n的。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)vid不带n的。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过正则匹配，获得网页源代码中的vid号，或者正则匹配从web_url中得到vid。然后我们通过开发者工具找到了关于视频一些信息的请求url，进行构造：
+```python
+  req_url = "http://my.tv.sohu.com/play/videonew.do?vid=%s&referer=http://my.tv.sohu.com" % vid
+```
+我们可以通过访问上面这个url，来获取到许多有用的数据（获取下来的是JSON格式的需要进行json.loads()操作）：host、video_name、video_size、video_author、video_time、su、clip、ck。接着通过对比:<br>
+sohuStartMonitor:"https://vm.aty.sohu.com/pvlog?vp=s&c=14908&v1=19843&v2=19897&p=wrapframe1&loc=CN3301&adstyle=wrapframe&du=65&adtime=15&trule=0&mx=1&al=9406238&out=0&au=1&vid=94766453&tvid=94766453&rt=6033a2f3380235b8feab335f171711f3&uv=15033813019205634143&uuid=9e712dd8-5868-3696-951f-e6cd95135608&UUID=9e712dd8-5868-3696-951f-e6cd95135608&vt=pgc&rd=my.tv.sohu.com&fee=0&isIf=0&suv=1708162045006877&uid=15033813019205634143&myTvUid=312813498&sz=1583_779&md=DClKrU8xiwkZo4meDBJol0sqMrdsUjP7w1nJdg==214&crid=0&scookie=1&ugcode=MTQoFmYvjCUqoPQu8A7_CvIVpcdohzfi4gHqggBZx_EoameDpqYl9JOaJqWpvX_zisALyWc5GUkBepTkx_PTCYkHgig3HWkuLxx0&ugu=312813498&ar=0&sign=GzWbD8e8dNE8mlctLpMPoB1KXSi34NeqK71v5H93xMRWeC8M3nJVw-vBZhvdnSYx&rip=60.12.8.177&sip=10.11.161.90&fip=60.12.8.177&url=https%3A//my.tv.sohu.com/us/312813498/94766453.shtml&ti=5byg5p+P6Iqd5L+p5YS/5a2Q5ZSx5q2M6Ieq5L+h5ruh5ruhIOaJi+iInui2s+i5iOeUu+mdouWPr+eIsQ==&tag=5byg5p+P6IqdIOiwoumchumUiyDosKLotKQg5aix5LmQ5pKt5oql&plat=pc&adplat=0&v1=19843&v2=19897&pagetype=1&suid=1708162045006877&w=1040&h=620&cheattype=0&sperotime=1511405757&tuv=15033813019205634143&encrysig=lVUqoJj2mcCfN2P2uEgsCfZjCrv5P-yn24E2ySXN8o8dAY6v<br>
+我们将利用上获得的部分参数进行构造原视频的url：
+```python
+        video_url = []
+        for su, clip, ck in zip(data['data']['su'], data['data']['clipsURL'], data['data']['ck']):
+          req_url = 'http://' + host + '/?prot=9&prod=flash&pt=1&file=' + clip + '&new=' + su + '&key=' + \
+              ck + '&vid=' + video_id + '&uid=' + str(int(time.time()*1000)) + '&t=' + str(random.random()) + '&rb=1'
+          data = json.loads(retry_get(req_url, self.headers))
+          video_url.append(str(data['url']))
+```
+因为经过测试后发现，搜狐视频有一部分视频是不分段的，有一部分是分段的，但相比于芒果来说要好的很多（大家自行体会）。所以通过for循环,将视频原地址存到video_url中。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2)vid带n的。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;测试后发现，将带有n的vid带入上面的URL中，会返回回来错误的信息，所以通过实践与测试，我们发现在网页源代码中有vid，次vid与web_url中的vid不同，但是可以取得正确的数据，所以通过网页源代码中获取该视频的vid。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;构造请求url:
+```python
+    req_url = 'http://hot.vrs.sohu.com/vrs_flash.action?vid=%s' % video_id
+```
+我们可以通过访问上面这个url，来获取到许多有用的数据（获取下来的是JSON格式的需要进行json.loads()操作）：host、video_name、video_size、video_author、video_time、su、clip、ck。然后同理利用这些参数构造原视频url：
+```python
+        video_url = []
+        for su, clip, ck in zip(data['data']['su'], data['data']['clipsURL'], data['data']['ck']):
+          req_url = 'http://' + host + '/?prot=9&prod=flash&pt=1&file=' + clip + '&new=' + su + '&key=' + \
+              ck + '&vid=' + video_id + '&uid=' + str(int(time.time()*1000)) + '&t=' + str(random.random()) + '&rb=1'
+          data = json.loads(retry_get(req_url, self.headers))
+          video_url.append(str(data['url']))
+```
+接下来就是下载与更新的操作了（人人那边有，就不在重复。）。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;项目一开始着手做的就是搜狐视频的视频与信息爬取，当时因为技术、知识有限，半个学期下来一直都没有太大的进展，所以这学期就着手从最简单的人人视频开始爬取，然后是网易视频，接着是凤凰视频，再接着是芒果TV，最后是搜狐视频。
 以上纯属个人兴趣爱好，欢迎多多提意见，如有冒犯，尽请谅解，不喜勿喷！
 
 
